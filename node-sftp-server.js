@@ -191,6 +191,10 @@ var SFTPServer = (function(superClass) {
 					_this.auth_wrapper = new ContextWrapper(ctx, _this);
 					return _this.emit("connect", _this.auth_wrapper);
 				});
+        client.on('error', function(err) {
+          debug("SFTP Server: error");
+          return _this.emit("error", err);
+        });
 				client.on('end', function() {
 					debug("SFTP Server: on('end')");
 					return _this.emit("end");
