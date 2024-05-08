@@ -204,14 +204,14 @@ var SFTPServer = (function(superClass) {
 					return client.on('session', function(accept, reject) {
 						var session;
 						session = accept();
-session.on('close', function() {
-  _this.emit("closesession", session);
-});
 						return session.on('sftp', function(accept, reject) {
 							var sftpStream;
 							sftpStream = accept();
-							session = new SFTPSession(sftpStream);
-							return _this._session_start_callback(session);
+							const sftpSession = new SFTPSession(sftpStream);
+              session.on('close', function() {
+                sftpSession.emit("closesession", session);
+              });
+							return _this._session_start_callback(sftpSession);
 						});
 					});
 				});
