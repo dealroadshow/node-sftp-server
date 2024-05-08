@@ -502,17 +502,21 @@ var SFTPSession = (function(superClass) {
 		if (this.handles[handle]) {
 			switch (this.handles[handle].mode) {
 				case "OPENDIR":
+          this.emit("close1");
 					this.handles[handle].responder.emit("end");
 					delete this.handles[handle];
 					return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
 				case "READ":
+          this.emit("close2");
 					delete this.handles[handle];
 					return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
 				case "WRITE":
+          this.emit("close3");
 					this.handles[handle].stream.push(null);
 					//delete this.handles[handle]; //can't delete it while it's still going, right?
 					return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
 				default:
+          this.emit("close4");
 					return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.FAILURE);
 			}
 		}
