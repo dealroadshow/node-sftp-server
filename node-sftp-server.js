@@ -204,18 +204,18 @@ var SFTPServer = (function(superClass) {
 					return client.on('session', function(accept, reject) {
 						var session;
 						session = accept();
-
+            console.log('SESSION', session);
+            session.on('close', function() {
+              console.log('SESSION CLOSE');
+            });
+            session.on('end', function() {
+              console.log('SESSION END');
+            });
 						return session.on('sftp', function(accept, reject) {
 							var sftpStream;
 							sftpStream = accept();
-							var sftpSession = new SFTPSession(sftpStream);
-
-              session.on('end', function() {
-                sftpSession.emit('end');
-                console.log('SESSION END');
-              });
-
-              return _this._session_start_callback(sftpSession);
+							session = new SFTPSession(sftpStream);
+							return _this._session_start_callback(session);
 						});
 					});
 				});
