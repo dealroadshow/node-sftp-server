@@ -211,6 +211,10 @@ var SFTPServer = (function(superClass) {
             session.on('end', function() {
               console.log('SESSION END');
             });
+            session.on('subsystem', function(accept, reject, info) {
+              const channel = accept();
+              console.log('channel', channel, info);
+            });
 						return session.on('sftp', function(accept, reject) {
 							var sftpStream;
 							sftpStream = accept();
