@@ -496,6 +496,8 @@ var SFTPSession = (function(superClass) {
 	};
 
 	SFTPSession.prototype.CLOSE = function(reqid, handle) {
+    this.emit("close");
+
 		//return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
 		if (this.handles[handle]) {
 			switch (this.handles[handle].mode) {
