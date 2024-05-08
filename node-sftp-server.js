@@ -219,7 +219,7 @@ var SFTPServer = (function(superClass) {
 						return session.on('sftp', function(accept, reject) {
 							var sftpStream;
 							sftpStream = accept();
-							session = new SFTPSession(sftpStream);
+							const session = new SFTPSession(sftpStream);
 							return _this._session_start_callback(session);
 						});
 					});
