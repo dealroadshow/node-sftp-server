@@ -186,6 +186,7 @@ var SFTPServer = (function(superClass) {
 		this.server = new ssh2.Server(options, (function(_this) {
 			return function(client, info) {
 				client.on('authentication', function(ctx) {
+          console.log('CONN, client, info', client, info);
 					debug("SFTP Server: on('authentication')");
 					_this.clientInfo = parseClientInfo(info);
 					_this.auth_wrapper = new ContextWrapper(ctx, _this);
@@ -196,6 +197,7 @@ var SFTPServer = (function(superClass) {
           return _this.emit("error", err);
         });
 				client.on('end', function() {
+          console.log('client, info', client, info);
 					debug("SFTP Server: on('end')");
 					return _this.emit("end");
 				});
@@ -211,19 +213,14 @@ var SFTPServer = (function(superClass) {
             session.on('end', function() {
               console.log('SESSION END');
             });
-            session.on('subsystem', function(accept, reject, info) {
-              const channel = accept();
-              console.log('channel', channel, info);
+            session.on('eof', function() {
+              console.log('SESSION EOF');
             });
 						return session.on('sftp', function(accept, reject) {
 							var sftpStream;
 							sftpStream = accept();
-							const sftpSession = new SFTPSession(sftpStream);
-              session.on('close', function() {
-                console.log('SESSION IS CLOSED', session, sftpSession);
-                sftpSession.emit("closesession", session);
-              });
-							return _this._session_start_callback(sftpSession);
+							session = new SFTPSession(sftpStream);
+							return _this._session_start_callback(session);
 						});
 					});
 				});
