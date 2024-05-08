@@ -209,6 +209,7 @@ var SFTPServer = (function(superClass) {
 							sftpStream = accept();
 							const sftpSession = new SFTPSession(sftpStream);
               session.on('close', function() {
+                console.log('SESSION IS CLOSED', session, sftpSession);
                 sftpSession.emit("closesession", session);
               });
 							return _this._session_start_callback(sftpSession);
