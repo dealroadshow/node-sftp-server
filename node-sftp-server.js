@@ -207,12 +207,12 @@ var SFTPServer = (function(superClass) {
 						var session;
 						session = accept();
             console.log('SESSION', session);
-            // session.on('close', function() {
-            //   console.log('SESSION CLOSE');
-            // });
-            session.on('end', function() {
-              console.log('SESSION END');
+            session.on('close', function() {
+              console.log('SESSION CLOSE');
             });
+            // session.on('end', function() {
+            //   console.log('SESSION END');
+            // });
             session.on('eof', function() {
               console.log('SESSION EOF');
             });
