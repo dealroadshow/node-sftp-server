@@ -200,6 +200,10 @@ var SFTPServer = (function(superClass) {
 					return _this.emit("end");
 				});
 				return client.on('ready', function(channel) {
+          console.log('channel', channel);
+          channel?.on?.('close', function() {
+            console.log('CLOSE CHANNEL');
+          })
 					client._sshstream.debug = debug;
 					return client.on('session', function(accept, reject) {
 						var session;
