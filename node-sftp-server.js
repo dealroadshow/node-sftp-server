@@ -202,7 +202,7 @@ var SFTPServer = (function(superClass) {
 					return _this.emit("end");
 				});
 				return client.on('ready', function(channel) {
-					client._sshstream.debug = debug;
+					client._sshstream.debug = true;
 					return client.on('session', function(accept, reject) {
 						var session;
 						session = accept();
