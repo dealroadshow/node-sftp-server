@@ -165,7 +165,10 @@ var ContextWrapper = (function() {
 			callback = function() {};
 		}
 		this.ctx.accept();
-		return this.server._session_start_callback = callback;
+		this.server._session_start_callback = this.server._session_start_callback || {};
+    this.server._session_start_callback[this.username] = callback;
+
+    return callback;
 	};
 
 	return ContextWrapper;
@@ -200,7 +203,6 @@ var SFTPServer = (function(superClass) {
 					return _this.emit("end");
 				});
 				return client.on('ready', function(channel) {
-          console.log('READY', _this);
 					client._sshstream.debug = debug;
 					return client.on('session', function(accept, reject) {
 						var session;
@@ -209,7 +211,9 @@ var SFTPServer = (function(superClass) {
 							var sftpStream;
 							sftpStream = accept();
 							session = new SFTPSession(sftpStream);
-							return _this._session_start_callback(session);
+              console.log('_this._session_start_callback', _this._session_start_callback);
+              console.log('-----READY _this.username', _this.username);
+							return _this._session_start_callback[_this.username]?.(session);
 						});
 					});
 				});
