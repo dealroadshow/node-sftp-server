@@ -165,7 +165,7 @@ var ContextWrapper = (function() {
 			callback = function() {};
 		}
 		this.ctx.accept();
-		return this._session_start_callback = callback;
+		return this.server._session_start_callback = callback;
 	};
 
 	return ContextWrapper;
@@ -185,6 +185,12 @@ var SFTPServer = (function(superClass) {
 		SFTPServer.options = options;
 		this.server = new ssh2.Server(options, (function(_this) {
 			return function(client, info) {
+				client.on('authentication', function(ctx) {
+					debug("SFTP Server: on('authentication')");
+					_this.clientInfo = parseClientInfo(info);
+					_this.auth_wrapper = new ContextWrapper(ctx, _this);
+					return _this.emit("connect", _this.auth_wrapper);
+				});
         client.on('error', function(err) {
           debug("SFTP Server: error");
           return _this.emit("error", err);
@@ -193,23 +199,19 @@ var SFTPServer = (function(superClass) {
 					debug("SFTP Server: on('end')");
 					return _this.emit("end");
 				});
-        return client.on('authentication', function(ctx) {
-          debug("SFTP Server: on('authentication')");
-          _this.clientInfo = parseClientInfo(info);
-          _this.auth_wrapper = new ContextWrapper(ctx, _this);
-          _this.emit("connect", _this.auth_wrapper);
-          return client.once('ready', function(channel) {
-            client._sshstream.debug = debug;
-            return client.on('session', function(accept, reject) {
-              var session = accept();
-              return session.on('sftp', function(accept, reject) {
-                var sftpStream = accept();
-                var session = new SFTPSession(sftpStream);
-                return _this.auth_wrapper._session_start_callback(session);
-              });
-            });
-          });
-        });
+				return client.on('ready', function(channel) {
+					client._sshstream.debug = debug;
+					return client.on('session', function(accept, reject) {
+						var session;
+						session = accept();
+						return session.on('sftp', function(accept, reject) {
+							var sftpStream;
+							sftpStream = accept();
+							session = new SFTPSession(sftpStream);
+							return _this._session_start_callback(session);
+						});
+					});
+				});
 			};
 		})(this));
 	}
