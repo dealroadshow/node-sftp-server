@@ -165,7 +165,9 @@ var ContextWrapper = (function() {
 			callback = function() {};
 		}
 		this.ctx.accept();
-		return this.server._session_start_callback = callback;
+    this.server._session_start_callback = this.server._session_start_callback || {};
+    this.server._session_start_callback[this.username] = callback;
+    return callback;
 	};
 
 	return ContextWrapper;
@@ -208,7 +210,8 @@ var SFTPServer = (function(superClass) {
 							var sftpStream;
 							sftpStream = accept();
 							session = new SFTPSession(sftpStream);
-							return _this._session_start_callback(session);
+              console.log('_this._session_start_callback', _this._session_start_callback);
+							return _this._session_start_callback[_this.auth_wrapper.username]?.(session);
 						});
 					});
 				});
