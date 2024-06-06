@@ -201,7 +201,7 @@ var SFTPServer = (function(superClass) {
 					debug("SFTP Server: on('end')");
 					return _this.emit("end");
 				});
-				return client.on('ready', function(channel) {
+				return client.on('ready', function(ctx) {
 					client._sshstream.debug = debug;
 					return client.on('session', function(accept, reject) {
 						var session;
@@ -210,8 +210,8 @@ var SFTPServer = (function(superClass) {
 							var sftpStream;
 							sftpStream = accept();
 							session = new SFTPSession(sftpStream);
-              console.log('_this._session_start_callback', _this._session_start_callback);
-							return _this._session_start_callback[_this.auth_wrapper.username]?.(session);
+              console.log('ready ctx', ctx);
+							return _this._session_start_callback[ctx.username]?.(session);
 						});
 					});
 				});
