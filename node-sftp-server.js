@@ -165,9 +165,7 @@ var ContextWrapper = (function() {
 			callback = function() {};
 		}
 		this.ctx.accept();
-    this.server._session_start_callback = this.server._session_start_callback || {};
-    this.server._session_start_callback[this.username] = callback;
-    return callback;
+    return this._session_start_callback = callback;
 	};
 
 	return ContextWrapper;
@@ -191,9 +189,9 @@ var SFTPServer = (function(superClass) {
 				client.on('authentication', function(ctx) {
 					debug("SFTP Server: on('authentication')");
 					_this.clientInfo = parseClientInfo(info);
-					_this.auth_wrapper = new ContextWrapper(ctx, _this);
-          usersContextMap.set(client, new ContextWrapper(ctx, _this));
-					return _this.emit("connect", _this.auth_wrapper);
+					const context = new ContextWrapper(ctx, _this);
+          usersContextMap.set(client, context);
+					return _this.emit("connect", context);
 				});
         client.on('error', function(err) {
           debug("SFTP Server: error");
@@ -203,7 +201,7 @@ var SFTPServer = (function(superClass) {
 					debug("SFTP Server: on('end')");
 					return _this.emit("end");
 				});
-				return client.on('ready', function(ctx) {
+				return client.on('ready', function(channel) {
 					client._sshstream.debug = debug;
 					return client.on('session', function(accept, reject) {
 						var session;
@@ -212,8 +210,7 @@ var SFTPServer = (function(superClass) {
 							var sftpStream;
 							sftpStream = accept();
 							session = new SFTPSession(sftpStream);
-              console.log('------------------------MAP', ctx.username, usersContextMap.get(client)?.username);
-							return _this._session_start_callback[ctx.username]?.(session);
+							return usersContextMap.get(client)?._session_start_callback?.(session);
 						});
 					});
 				});
