@@ -190,11 +190,15 @@ var SFTPServer = (function(superClass) {
 					_this.clientInfo = parseClientInfo(info);
 					_this.auth_wrapper = new ContextWrapper(ctx, _this);
 
+          console.log('ctx', ctx);
+
           client.on('ready', function(channel) {
+            console.log('channel', channel);
             client._sshstream.debug = debug;
             return client.on('session', function(accept, reject) {
               var session;
               session = accept();
+              console.log('!!!!!!!!!!!!!!!!!session', session);
               return session.on('sftp', function(accept, reject) {
                 var sftpStream;
                 sftpStream = accept();
