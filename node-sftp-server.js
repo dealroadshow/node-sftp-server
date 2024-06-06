@@ -165,7 +165,7 @@ var ContextWrapper = (function() {
 			callback = function() {};
 		}
 		this.ctx.accept();
-		return this._session_start_callback = callback;
+		return this.server._session_start_callback = callback;
 	};
 
 	return ContextWrapper;
@@ -189,25 +189,6 @@ var SFTPServer = (function(superClass) {
 					debug("SFTP Server: on('authentication')");
 					_this.clientInfo = parseClientInfo(info);
 					_this.auth_wrapper = new ContextWrapper(ctx, _this);
-
-          console.log('ctx', ctx);
-
-          client.on('ready', function(channel) {
-            console.log('channel', channel);
-            client._sshstream.debug = debug;
-            return client.on('session', function(accept, reject) {
-              var session;
-              session = accept();
-              console.log('!!!!!!!!!!!!!!!!!session', session);
-              return session.on('sftp', function(accept, reject) {
-                var sftpStream;
-                sftpStream = accept();
-                session = new SFTPSession(sftpStream);
-                return _this.auth_wrapper._session_start_callback(session);
-              });
-            });
-          });
-
 					return _this.emit("connect", _this.auth_wrapper);
 				});
         client.on('error', function(err) {
@@ -217,6 +198,20 @@ var SFTPServer = (function(superClass) {
 				client.on('end', function() {
 					debug("SFTP Server: on('end')");
 					return _this.emit("end");
+				});
+				return client.on('ready', function(channel) {
+					client._sshstream.debug = debug;
+					return client.on('session', function(accept, reject) {
+						var session;
+						session = accept();
+            console.log('session', session);
+						return session.on('sftp', function(accept, reject) {
+							var sftpStream;
+							sftpStream = accept();
+							session = new SFTPSession(sftpStream);
+							return _this._session_start_callback(session);
+						});
+					});
 				});
 			};
 		})(this));
