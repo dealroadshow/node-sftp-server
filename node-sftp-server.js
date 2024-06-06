@@ -205,6 +205,7 @@ var SFTPServer = (function(superClass) {
 						var session;
 						session = accept();
 						return session.on('sftp', function(accept, reject) {
+              console.log('** --> session', session);
 							var sftpStream;
 							sftpStream = accept();
 							session = new SFTPSession(sftpStream);
