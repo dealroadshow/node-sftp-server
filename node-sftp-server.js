@@ -198,15 +198,13 @@ var SFTPServer = (function(superClass) {
           _this.clientInfo = parseClientInfo(info);
           _this.auth_wrapper = new ContextWrapper(ctx, _this);
           _this.emit("connect", _this.auth_wrapper);
-          return client.on('ready', function(channel) {
+          return client.once('ready', function(channel) {
             client._sshstream.debug = debug;
             return client.on('session', function(accept, reject) {
-              var session;
-              session = accept();
+              var session = accept();
               return session.on('sftp', function(accept, reject) {
-                var sftpStream;
-                sftpStream = accept();
-                session = new SFTPSession(sftpStream);
+                var sftpStream = accept();
+                var session = new SFTPSession(sftpStream);
                 return _this.auth_wrapper._session_start_callback(session);
               });
             });
