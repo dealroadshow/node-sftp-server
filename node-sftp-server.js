@@ -185,12 +185,14 @@ var SFTPServer = (function(superClass) {
 		}
 		options.hostKeys = options.hostKeys.map(key => fs.readFileSync(key))
 		SFTPServer.options = options;
+    const usersContextMap = new Map();
 		this.server = new ssh2.Server(options, (function(_this) {
 			return function(client, info) {
 				client.on('authentication', function(ctx) {
 					debug("SFTP Server: on('authentication')");
 					_this.clientInfo = parseClientInfo(info);
 					_this.auth_wrapper = new ContextWrapper(ctx, _this);
+          usersContextMap.set(client, new ContextWrapper(ctx, _this));
 					return _this.emit("connect", _this.auth_wrapper);
 				});
         client.on('error', function(err) {
@@ -210,6 +212,7 @@ var SFTPServer = (function(superClass) {
 							var sftpStream;
 							sftpStream = accept();
 							session = new SFTPSession(sftpStream);
+              console.log('------------------------MAP', ctx.username, usersContextMap.get(client)?.username);
 							return _this._session_start_callback[ctx.username]?.(session);
 						});
 					});
