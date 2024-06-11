@@ -165,7 +165,7 @@ var ContextWrapper = (function() {
 			callback = function() {};
 		}
 		this.ctx.accept();
-		return this.server._session_start_callback = callback;
+		return this._session_start_callback = callback;
 	};
 
 	return ContextWrapper;
@@ -188,8 +188,8 @@ var SFTPServer = (function(superClass) {
 				client.on('authentication', function(ctx) {
 					debug("SFTP Server: on('authentication')");
 					_this.clientInfo = parseClientInfo(info);
-					_this.auth_wrapper = new ContextWrapper(ctx, _this);
-					return _this.emit("connect", _this.auth_wrapper);
+					client.auth_wrapper = new ContextWrapper(ctx, _this);
+					return _this.emit("connect", client.auth_wrapper);
 				});
         client.on('error', function(err) {
           debug("SFTP Server: error");
@@ -208,7 +208,7 @@ var SFTPServer = (function(superClass) {
 							var sftpStream;
 							sftpStream = accept();
 							session = new SFTPSession(sftpStream);
-							return _this._session_start_callback(session);
+							return client.auth_wrapper?._session_start_callback?.(session);
 						});
 					});
 				});
