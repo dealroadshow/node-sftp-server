@@ -179,7 +179,7 @@ var SFTPServer = (function(superClass) {
 
 	function SFTPServer(options) {
 		if (options.debug) {
-			debug = function(msg) { console.log(msg); };
+			options.debug = function(msg) { console.log(msg); };
 		}
 		options.hostKeys = options.hostKeys.map(key => fs.readFileSync(key))
 		SFTPServer.options = options;
