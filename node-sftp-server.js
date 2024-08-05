@@ -192,7 +192,7 @@ var SFTPServer = (function(superClass) {
 					return _this.emit("connect", client.auth_wrapper);
 				});
         client.on('error', function(err) {
-          debug("SFTP Server: error");
+          debug("SFTP Server: error", err);
           return _this.emit("error", err);
         });
 				client.on('end', function() {
