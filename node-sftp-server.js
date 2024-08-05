@@ -194,6 +194,7 @@ var SFTPServer = (function(superClass) {
 				});
         client.on('error', function(err) {
           debug("SFTP Server: error", err);
+          debug("SFTP Server: error", err.toString());
           debug("SFTP Server: error", JSON.stringify(err));
           return _this.emit("error", err);
         });
