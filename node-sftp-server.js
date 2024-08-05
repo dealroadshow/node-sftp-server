@@ -179,7 +179,7 @@ var SFTPServer = (function(superClass) {
 
 	function SFTPServer(options) {
 		if (options.debug) {
-      options.debug = function(msg) { console.log(msg); };
+			options.debug = function(msg) { console.log(msg); };
 		}
 		options.hostKeys = options.hostKeys.map(key => fs.readFileSync(key))
 		SFTPServer.options = options;
@@ -200,7 +200,7 @@ var SFTPServer = (function(superClass) {
 					return _this.emit("end");
 				});
 				return client.on('ready', function(channel) {
-					client._sshstream.debug = debug;
+					// client._sshstream.debug = debug;
 					return client.on('session', function(accept, reject) {
 						var session;
 						session = accept();
