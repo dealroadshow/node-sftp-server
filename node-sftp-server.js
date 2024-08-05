@@ -35,6 +35,7 @@ var fs = require('fs');
 var moment = require('moment');
 
 var constants = require('constants');
+const { STATUS_CODE } = require('ssh2/lib/protocol/SFTP');
 
 var getLongname = function(name, attrs, owner = 'nobody', group = 'nogroup') {
 	let longname = '';
@@ -95,7 +96,7 @@ var Responder = (function(superClass) {
 			return function(symbol) {
 				return _this[methodname] = function() {
 					_this.done = true;
-					return _this.sftpStream.status(_this.req, ssh2.utils.sftp.SFTP_STATUS_CODE[symbol]);
+					return _this.sftpStream.status(_this.req, ssh2.utils.sftp.STATUS_CODE[symbol]);
 				};
 			};
 		})(this);
@@ -251,7 +252,7 @@ var Statter = (function() {
 	};
 
 	Statter.prototype.nofile = function() {
-		return this.sftpStream.status(this.reqid, ssh2.utils.sftp.SFTP_STATUS_CODE.NO_SUCH_FILE);
+		return this.sftpStream.status(this.reqid, ssh2.utils.sftp.STATUS_CODE.NO_SUCH_FILE);
 	};
 
 	Statter.prototype._get_mode = function() {
@@ -397,7 +398,7 @@ var SFTPSession = (function(superClass) {
 	SFTPSession.prototype.READDIR = function(reqid, handle) {
 		var ref;
 		if (((ref = this.handles[handle]) != null ? ref.mode : void 0) !== "OPENDIR") {
-			return this.sftpStream.status(reqid, ssh2.utils.sftp.SFTP_STATUS_CODE.NO_SUCH_FILE);
+			return this.sftpStream.status(reqid, ssh2.utils.sftp.STATUS_CODE.NO_SUCH_FILE);
 		}
 		return this.handles[handle].responder.request_directory(reqid);
 	};
@@ -469,7 +470,7 @@ var SFTPSession = (function(superClass) {
 				}
 
 				if (offset >= stats.size) {
-					return this.sftpStream.status(reqid, ssh2.utils.sftp.SFTP_STATUS_CODE.EOF);
+					return this.sftpStream.status(reqid, ssh2.utils.sftp.STATUS_CODE.EOF);
 				} else {
 					var buffer = Buffer.alloc(length);
 					return fs.read(localHandle.tmpFile, buffer, 0, length, offset, function(err, bytesRead, buffer) {
@@ -498,26 +499,26 @@ var SFTPSession = (function(superClass) {
 
 	SFTPSession.prototype.WRITE = function(reqid, handle, offset, data) {
 		this.handles[handle].stream.push(data);
-		return this.sftpStream.status(reqid, ssh2.utils.sftp.SFTP_STATUS_CODE.OK);
+		return this.sftpStream.status(reqid, ssh2.utils.sftp.STATUS_CODE.OK);
 	};
 
 	SFTPSession.prototype.CLOSE = function(reqid, handle) {
-		//return this.sftpStream.status(reqid, ssh2.utils.sftp.SFTP_STATUS_CODE.OK);
+		//return this.sftpStream.status(reqid, ssh2.utils.sftp.STATUS_CODE.OK);
 		if (this.handles[handle]) {
 			switch (this.handles[handle].mode) {
 				case "OPENDIR":
 					this.handles[handle].responder.emit("end");
 					delete this.handles[handle];
-					return this.sftpStream.status(reqid, ssh2.utils.sftp.SFTP_STATUS_CODE.OK);
+					return this.sftpStream.status(reqid, ssh2.utils.sftp.STATUS_CODE.OK);
 				case "READ":
 					delete this.handles[handle];
-					return this.sftpStream.status(reqid, ssh2.utils.sftp.SFTP_STATUS_CODE.OK);
+					return this.sftpStream.status(reqid, ssh2.utils.sftp.STATUS_CODE.OK);
 				case "WRITE":
 					this.handles[handle].stream.push(null);
 					//delete this.handles[handle]; //can't delete it while it's still going, right?
-					return this.sftpStream.status(reqid, ssh2.utils.sftp.SFTP_STATUS_CODE.OK);
+					return this.sftpStream.status(reqid, ssh2.utils.sftp.STATUS_CODE.OK);
 				default:
-					return this.sftpStream.status(reqid, ssh2.utils.sftp.SFTP_STATUS_CODE.FAILURE);
+					return this.sftpStream.status(reqid, ssh2.utils.sftp.STATUS_CODE.FAILURE);
 			}
 		}
 	};
