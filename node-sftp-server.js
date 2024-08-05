@@ -367,6 +367,7 @@ var SFTPSession = (function(superClass) {
 	};
 
 	SFTPSession.prototype.OPENDIR = function(reqid, path) {
+    console.log('OPENDIR reqid', reqid, path);
 		var diremit;
 		diremit = new DirectoryEmitter(this.sftpStream, reqid);
 		diremit.on("newListener", (function(_this) {
