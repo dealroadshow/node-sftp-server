@@ -180,6 +180,7 @@ var SFTPServer = (function(superClass) {
 	function SFTPServer(options) {
 		if (options.debug) {
 			options.debug = function(msg) { console.log(msg); };
+			debug = function(msg) { console.log(msg); };
 		}
 		options.hostKeys = options.hostKeys.map(key => fs.readFileSync(key))
 		SFTPServer.options = options;
@@ -201,10 +202,13 @@ var SFTPServer = (function(superClass) {
 				});
 				return client.on('ready', function(channel) {
 					// client._sshstream.debug = debug;
+					debug("SFTP Server: on('ready')");
 					return client.on('session', function(accept, reject) {
 						var session;
 						session = accept();
+						debug("SFTP Server: on('session')");
 						return session.on('sftp', function(accept, reject) {
+							debug("SFTP Server: on('sftp')");
 							var sftpStream;
 							sftpStream = accept();
 							session = new SFTPSession(sftpStream);
