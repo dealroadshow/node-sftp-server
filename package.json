@@ -19,7 +19,7 @@
   "dependencies": {
     "ssh2": "^0.5.4",
     "ssh2-streams": "^0.1.16",
-    "tmp": "^0.0.30"
+    "tmp": "^0.2.3"
   },
   "bugs": {
     "url": "https://github.com/BriteVerify/node-sftp-server/issues"
