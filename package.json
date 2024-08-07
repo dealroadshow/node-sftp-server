@@ -17,8 +17,8 @@
   "author": "Brady Wetherington <brady@briteverify.com>",
   "license": "ISC",
   "dependencies": {
-    "ssh2": "^1.2.0",
-    "ssh2-streams": "^0.4.10",
+    "ssh2": "^0.5.4",
+    "ssh2-streams": "^0.1.16",
     "tmp": "^0.0.30"
   },
   "bugs": {
