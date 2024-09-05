@@ -458,7 +458,7 @@ var SFTPSession = (function(superClass) {
 		// Once our readstream is at eof, we're done reading into the
 		// buffer, and we know we can check against it for EOF state.
 		if (localHandle.finished) {
-      console.log('read TMP', localHandle.tmpPath)''
+      console.log('read TMP', localHandle.tmpPath);
 			return fs.stat(localHandle.tmpPath, function(err, stats) {
 				if (err) {
           console.log('ERROR', err);
