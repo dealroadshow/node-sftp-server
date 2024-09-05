@@ -397,8 +397,7 @@ var SFTPSession = (function(superClass) {
 	};
 
 	SFTPSession.prototype.OPEN = function(reqid, pathname, flags, attrs) {
-		var handle, rs, started, stringflags, ts;
-		stringflags = SFTP.flagsToString(flags);
+		var stringflags = SFTP.flagsToString(flags);
 
 		if (stringflags === 'r') {
 			// Create a temporary file to hold stream contents.
@@ -410,7 +409,7 @@ var SFTPSession = (function(superClass) {
 				if (err) {
 					throw err;
 				}
-				handle = this.fetchhandle();
+				var handle = this.fetchhandle();
 				this.handles[handle] = {
 					mode: "READ",
 					path: pathname,
@@ -427,14 +426,14 @@ var SFTPSession = (function(superClass) {
 			}.bind(this));
 		}
 		if (stringflags === 'w' || stringflags === 'wx') {
-			rs = new Readable();
-			started = false;
+			var rs = new Readable();
+			var started = false;
 			rs._read = (function(_this) {
 				return function(bytes) {
 					if (started) {
 						return;
 					}
-					handle = _this.fetchhandle();
+					var handle = _this.fetchhandle();
 					_this.handles[handle] = {
 						mode: "WRITE",
 						path: pathname,
