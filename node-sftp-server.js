@@ -419,9 +419,11 @@ var SFTPSession = (function(superClass) {
 				};
 				var writestream = fs.createWriteStream(tmpPath);
 				writestream.on("finish", function() {
+          console.log('FINISH');
 					this.handles[handle].finished = true;
 				}.bind(this));
 				this.emit("readfile", pathname, writestream);
+        console.log('HANDLE', handle);
 				return this.sftpStream.handle(reqid, handle);
 			}.bind(this));
 		}
@@ -453,6 +455,8 @@ var SFTPSession = (function(superClass) {
 	SFTPSession.prototype.READ = function(reqid, handle, offset, length) {
 		var localHandle = this.handles[handle];
 
+    console.log('localHandle.finished', localHandle.finished);
+
 		// Once our readstream is at eof, we're done reading into the
 		// buffer, and we know we can check against it for EOF state.
 		if (localHandle.finished) {
@@ -462,10 +466,13 @@ var SFTPSession = (function(superClass) {
 				}
 
 				if (offset >= stats.size) {
+          console.log('offset', offset, 'size'. stats.size);
 					return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.EOF);
 				} else {
 					var buffer = Buffer.alloc(length);
+          console.log('read tmp file');
 					return fs.read(localHandle.tmpFile, buffer, 0, length, offset, function(err, bytesRead, buffer) {
+            console.log('send data to stream');
 						return this.sftpStream.data(reqid, buffer.slice(0, bytesRead));
 					}.bind(this));
 				}
