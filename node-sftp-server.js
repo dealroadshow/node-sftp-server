@@ -456,6 +456,8 @@ var SFTPSession = (function(superClass) {
     console.log('--- Read', offset, length);
 		var localHandle = this.handles[handle];
 
+    console.log('localHandle', localHandle.finished, localHandle);
+
 		// Once our readstream is at eof, we're done reading into the
 		// buffer, and we know we can check against it for EOF state.
 		if (localHandle.finished) {
