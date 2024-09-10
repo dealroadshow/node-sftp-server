@@ -63,6 +63,8 @@ var getLongname = function(name, attrs, owner = 'nobody', group = 'nogroup') {
 	longname += ' ' + moment.unix(attrs.mtime).format('MMM DD HH:mm');
 	longname += ' ' + name;
 
+  console.log('longname', longname);
+
 	return longname;
 };
 
