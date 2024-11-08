@@ -35,6 +35,7 @@ var fs = require('fs');
 var moment = require('moment');
 
 var constants = require('constants');
+const { PassThrough } = require("node:stream");
 
 var getLongname = function(name, attrs, owner = 'nobody', group = 'nogroup') {
 	let longname = '';
@@ -427,24 +428,19 @@ var SFTPSession = (function(superClass) {
 			}.bind(this));
 		}
 		if (stringflags === 'w' || stringflags === 'wx') {
-			rs = new Readable();
-			started = false;
-			rs._read = (function(_this) {
-				return function(bytes) {
-					if (started) {
-						return;
-					}
-					handle = _this.fetchhandle();
-					_this.handles[handle] = {
-						mode: "WRITE",
-						path: pathname,
-						stream: rs
-					};
-					_this.sftpStream.handle(reqid, handle);
-					return started = true;
-				};
-			})(this);
-			return this.emit("writefile", pathname, rs);
+			const proxy = new PassThrough();
+			proxy.setMaxListeners(100);
+			handle = this.fetchhandle();
+			this.handles[handle] = {
+				mode: "WRITE",
+				path: pathname,
+				stream: proxy,
+				processed: 0
+			};
+			this.sftpStream.handle(reqid, handle);
+			this.emit("writefile", pathname, proxy);
+
+			return true;
 		}
 
 		return this.emit("error", new Error("Unknown open flags: " + stringflags));
@@ -491,8 +487,19 @@ var SFTPSession = (function(superClass) {
 	};
 
 	SFTPSession.prototype.WRITE = function(reqid, handle, offset, data) {
-		this.handles[handle].stream.push(data);
-		return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
+		const stream = this.handles[handle].stream;
+		const written = stream.write(data);
+
+		if (!written) {
+			// Wait for drain event to avoid stream buffer overflow
+			stream.once('drain', () => {
+				this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
+			});
+		} else {
+			this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
+		}
+
+		return true;
 	};
 
 	SFTPSession.prototype.CLOSE = function(reqid, handle) {
@@ -507,8 +514,8 @@ var SFTPSession = (function(superClass) {
 					delete this.handles[handle];
 					return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
 				case "WRITE":
-					this.handles[handle].stream.push(null);
-					//delete this.handles[handle]; //can't delete it while it's still going, right?
+					this.handles[handle].stream.end();
+					delete this.handles[handle]; //can't delete it while it's still going, right?
 					return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
 				default:
 					return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.FAILURE);
