@@ -448,53 +448,66 @@ var SFTPSession = (function(superClass) {
 	};
 
 	SFTPSession.prototype.READ = function(reqid, handle, offset, length) {
-		var localHandle = this.handles[handle];
+    try {
+      var localHandle = this.handles[handle];
 
-		// Once our readstream is at eof, we're done reading into the
-		// buffer, and we know we can check against it for EOF state.
-		if (localHandle.finished) {
-			return fs.stat(localHandle.tmpPath, function(err, stats) {
-				if (err) {
-          console.log('ERROR finished', err);
-					throw err;
-				}
+      // Once our readstream is at eof, we're done reading into the
+      // buffer, and we know we can check against it for EOF state.
+      if (localHandle.finished) {
+        return fs.stat(localHandle.tmpPath, function(err, stats) {
+          if (err) {
+            console.log('------STAT ERROR finished', err);
+            throw err;
+          }
 
-				if (offset >= stats.size) {
-					return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.EOF);
-				} else {
-					var buffer = Buffer.alloc(length + 1);
-          console.log('finished file read', stats.size, offset, length);
-					return fs.read(localHandle.tmpFile, buffer, 0, length, offset, function(err, bytesRead, buffer) {
-            console.log('finished stream push', bytesRead, offset + bytesRead);
-						return this.sftpStream.data(reqid, buffer.slice(0, bytesRead));
-					}.bind(this));
-				}
-			}.bind(this));
-		}
-
-		// If we're not at EOF from the buffer yet, we either need to put more data
-		// down the wire, or need to wait for more data to become available.
-		return fs.stat(localHandle.tmpPath, function(err, stats) {
-      if (err) {
-        console.log('ERROR not finished', err);
-        throw err;
+          if (offset >= stats.size) {
+            return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.EOF);
+          } else {
+            var buffer = Buffer.alloc(length + 1);
+            console.log('finished file read', stats.size, offset, length);
+            return fs.read(localHandle.tmpFile, buffer, 0, length, offset, function(err, bytesRead, buffer) {
+              if (err) {
+                console.log('------READ ERROR finished', err);
+                throw err;
+              }
+              console.log('finished stream push', bytesRead, offset + bytesRead);
+              return this.sftpStream.data(reqid, buffer.slice(0, bytesRead));
+            }.bind(this));
+          }
+        }.bind(this));
       }
-      console.log('TRY not finished file read', stats.size, offset, length);
-			if (stats.size >= offset + length) {
-				var buffer = Buffer.alloc(length + 1);
-        console.log('not finished file read', stats.size, offset, length);
-				return fs.read(localHandle.tmpFile, buffer, 0, length, offset, function(err, bytesRead, buffer) {
-          console.log('not finished stream push', bytesRead, offset + bytesRead);
-					return this.sftpStream.data(reqid, buffer.slice(0, bytesRead));
-				}.bind(this));
-			} else {
-        console.log('NOTHING TO READ');
-				// Wait for more data to become available.
-				setTimeout(function() {
-					this.READ(reqid, handle, offset, length);
-				}.bind(this), 50);
-			}
-		}.bind(this));
+
+      // If we're not at EOF from the buffer yet, we either need to put more data
+      // down the wire, or need to wait for more data to become available.
+      return fs.stat(localHandle.tmpPath, function(err, stats) {
+        if (err) {
+          console.log('------STAT ERROR not finished', err);
+          throw err;
+        }
+        console.log('TRY not finished file read', stats.size, offset, length);
+        if (stats.size >= offset + length) {
+          var buffer = Buffer.alloc(length + 1);
+          console.log('not finished file read', stats.size, offset, length);
+          return fs.read(localHandle.tmpFile, buffer, 0, length, offset, function(err, bytesRead, buffer) {
+            if (err) {
+              console.log('------READ ERROR not finished', err);
+              throw err;
+            }
+            console.log('not finished stream push', bytesRead, offset + bytesRead);
+            return this.sftpStream.data(reqid, buffer.slice(0, bytesRead));
+          }.bind(this));
+        } else {
+          console.log('NOTHING TO READ');
+          // Wait for more data to become available.
+          setTimeout(function() {
+            this.READ(reqid, handle, offset, length);
+          }.bind(this), 50);
+        }
+      }.bind(this));
+    } catch (err) {
+      console.log('------GENERAL READ ERROR', err);
+      throw err;
+    }
 	};
 
 	SFTPSession.prototype.WRITE = function(reqid, handle, offset, data) {
