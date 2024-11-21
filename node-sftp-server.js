@@ -448,6 +448,7 @@ var SFTPSession = (function(superClass) {
 	};
 
 	SFTPSession.prototype.READ = function(reqid, handle, offset, length) {
+    console.log('READ', offset, length);
 		var localHandle = this.handles[handle];
 
 		// Once our readstream is at eof, we're done reading into the
@@ -462,7 +463,9 @@ var SFTPSession = (function(superClass) {
 					return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.EOF);
 				} else {
 					var buffer = Buffer.alloc(length);
+          console.log('finished file read', stats.size, offset, length);
 					return fs.read(localHandle.tmpFile, buffer, 0, length, offset, function(err, bytesRead, buffer) {
+            console.log('finished stream push', bytesRead);
 						return this.sftpStream.data(reqid, buffer.slice(0, bytesRead));
 					}.bind(this));
 				}
@@ -474,7 +477,9 @@ var SFTPSession = (function(superClass) {
 		return fs.stat(localHandle.tmpPath, function(err, stats) {
 			if (stats.size >= offset + length) {
 				var buffer = Buffer.alloc(length);
+        console.log('not finished file read', stats.size, offset, length);
 				return fs.read(localHandle.tmpFile, buffer, 0, length, offset, function(err, bytesRead, buffer) {
+          console.log('not finished stream push', bytesRead);
 					return this.sftpStream.data(reqid, buffer.slice(0, bytesRead));
 				}.bind(this));
 			} else {
