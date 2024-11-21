@@ -455,6 +455,7 @@ var SFTPSession = (function(superClass) {
 		if (localHandle.finished) {
 			return fs.stat(localHandle.tmpPath, function(err, stats) {
 				if (err) {
+          console.log('ERROR finished', err);
 					throw err;
 				}
 
@@ -464,7 +465,7 @@ var SFTPSession = (function(superClass) {
 					var buffer = Buffer.alloc(length + 1);
           console.log('finished file read', stats.size, offset, length);
 					return fs.read(localHandle.tmpFile, buffer, 0, length, offset, function(err, bytesRead, buffer) {
-            console.log('finished stream push', bytesRead);
+            console.log('finished stream push', bytesRead, offset + bytesRead);
 						return this.sftpStream.data(reqid, buffer.slice(0, bytesRead));
 					}.bind(this));
 				}
@@ -474,12 +475,16 @@ var SFTPSession = (function(superClass) {
 		// If we're not at EOF from the buffer yet, we either need to put more data
 		// down the wire, or need to wait for more data to become available.
 		return fs.stat(localHandle.tmpPath, function(err, stats) {
+      if (err) {
+        console.log('ERROR not finished', err);
+        throw err;
+      }
       console.log('TRY not finished file read', stats.size, offset, length);
 			if (stats.size >= offset + length) {
 				var buffer = Buffer.alloc(length + 1);
         console.log('not finished file read', stats.size, offset, length);
 				return fs.read(localHandle.tmpFile, buffer, 0, length, offset, function(err, bytesRead, buffer) {
-          console.log('not finished stream push', bytesRead);
+          console.log('not finished stream push', bytesRead, offset + bytesRead);
 					return this.sftpStream.data(reqid, buffer.slice(0, bytesRead));
 				}.bind(this));
 			} else {
