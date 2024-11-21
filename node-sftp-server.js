@@ -474,6 +474,7 @@ var SFTPSession = (function(superClass) {
 		// If we're not at EOF from the buffer yet, we either need to put more data
 		// down the wire, or need to wait for more data to become available.
 		return fs.stat(localHandle.tmpPath, function(err, stats) {
+      console.log('TRY not finished file read', stats.size, offset, length);
 			if (stats.size >= offset + length) {
 				var buffer = Buffer.alloc(length + 1);
         console.log('not finished file read', stats.size, offset, length);
