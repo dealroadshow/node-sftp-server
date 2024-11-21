@@ -463,15 +463,17 @@ var SFTPSession = (function(superClass) {
           if (offset >= stats.size) {
             return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.EOF);
           } else {
-            var buffer = Buffer.alloc(length + 1);
-            console.log('finished file read', stats.size, offset, length);
+            var buffer = Buffer.alloc(length);
             return fs.read(localHandle.tmpFile, buffer, 0, length, offset, function(err, bytesRead, buffer) {
               if (err) {
                 console.log('------READ ERROR finished', err);
                 throw err;
               }
-              console.log('finished stream push', bytesRead, offset + bytesRead);
-              return this.sftpStream.data(reqid, buffer.slice(0, bytesRead));
+              try {
+                return this.sftpStream.data(reqid, buffer.slice(0, bytesRead));
+              } catch (err) {
+                console.log('------PUSH ERROR finished', err);
+              }
             }.bind(this));
           }
         }.bind(this));
@@ -484,20 +486,20 @@ var SFTPSession = (function(superClass) {
           console.log('------STAT ERROR not finished', err);
           throw err;
         }
-        console.log('TRY not finished file read', stats.size, offset, length);
         if (stats.size >= offset + length) {
-          var buffer = Buffer.alloc(length + 1);
-          console.log('not finished file read', stats.size, offset, length);
+          var buffer = Buffer.alloc(length);
           return fs.read(localHandle.tmpFile, buffer, 0, length, offset, function(err, bytesRead, buffer) {
             if (err) {
               console.log('------READ ERROR not finished', err);
               throw err;
             }
-            console.log('not finished stream push', bytesRead, offset + bytesRead);
-            return this.sftpStream.data(reqid, buffer.slice(0, bytesRead));
+            try {
+              return this.sftpStream.data(reqid, buffer.slice(0, bytesRead));
+            } catch (err) {
+              console.log('------PUSH ERROR not finished', err);
+            }
           }.bind(this));
         } else {
-          console.log('NOTHING TO READ');
           // Wait for more data to become available.
           setTimeout(function() {
             this.READ(reqid, handle, offset, length);
