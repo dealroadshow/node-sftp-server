@@ -289,7 +289,8 @@ var SFTPSession = (function(superClass) {
 		"REALPATH", "STAT", "LSTAT", "FSTAT",
 		"OPENDIR", "CLOSE", "REMOVE", "READDIR",
 		"OPEN", "READ", "WRITE", "RENAME",
-		"MKDIR", "RMDIR", "SETSTAT"
+		"MKDIR", "RMDIR", "SETSTAT",
+    'error', 'close', 'open'
 	];
 
 	function SFTPSession(sftpStream1) {
@@ -313,6 +314,18 @@ var SFTPSession = (function(superClass) {
 			fn(event);
 		}
 	}
+
+  SFTPSession.prototype.error = function(err) {
+    console.log('SESSION ERROR', err);
+  }
+
+  SFTPSession.prototype.close = function() {
+    console.log('SESSION CLOSE');
+  }
+
+  SFTPSession.prototype.open = function() {
+    console.log('SESSION OPEN');
+  }
 
 	SFTPSession.prototype.fetchhandle = function() {
 		var prevhandle;
@@ -414,24 +427,18 @@ var SFTPSession = (function(superClass) {
 					throw err;
 				}
 				handle = this.fetchhandle();
-        const proxy = new PassThrough();
-        proxy.setMaxListeners(100);
 				this.handles[handle] = {
 					mode: "READ",
 					path: pathname,
 					finished: false,
 					tmpPath: tmpPath,
 					tmpFile: fd,
-          stream: proxy
 				};
-				// var writestream = fs.createWriteStream(tmpPath);
-				// writestream.on("finish", function() {
-				// 	this.handles[handle].finished = true;
-				// }.bind(this));
-        proxy.on("finish", function() {
-          this.handles[handle].finished = true;
-        }.bind(this));
-				this.emit("readfile", pathname, proxy);
+				var writestream = fs.createWriteStream(tmpPath, { fd });
+				writestream.on("finish", function() {
+					this.handles[handle].finished = true;
+				}.bind(this));
+				this.emit("readfile", pathname, writestream);
 				return this.sftpStream.handle(reqid, handle);
 			}.bind(this));
 		}
@@ -456,9 +463,6 @@ var SFTPSession = (function(superClass) {
 	};
 
 	SFTPSession.prototype.READ = function(reqid, handle, offset, length) {
-    var localHandle = this.handles[handle];
-    return pipeline(localHandle.stream, this.sftpStream);
-
     try {
       var localHandle = this.handles[handle];
 
