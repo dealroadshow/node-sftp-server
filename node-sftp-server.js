@@ -28,6 +28,7 @@ tmp.setGracefulCleanup();
 var Readable = require('stream').Readable;
 var Writable = require('stream').Writable;
 var Transform = require('stream').Transform;
+const pipeline = require('node:stream/promises').pipeline;
 
 var EventEmitter = require("events").EventEmitter;
 var fs = require('fs');
@@ -409,6 +410,7 @@ var SFTPSession = (function(superClass) {
 			}
 			return tmp.file(options, function(err, tmpPath, fd) {
 				if (err) {
+          console.log('------TMP FILE ERROR', err);
 					throw err;
 				}
 				handle = this.fetchhandle();
@@ -448,6 +450,9 @@ var SFTPSession = (function(superClass) {
 	};
 
 	SFTPSession.prototype.READ = function(reqid, handle, offset, length) {
+    var localHandle = this.handles[handle];
+    return pipeline(localHandle.stream, this.sftpStream);
+
     try {
       var localHandle = this.handles[handle];
 
