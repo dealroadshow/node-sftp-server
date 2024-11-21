@@ -414,23 +414,24 @@ var SFTPSession = (function(superClass) {
 					throw err;
 				}
 				handle = this.fetchhandle();
-        const transformStream = new Transform();
+        const proxy = new PassThrough();
+        proxy.setMaxListeners(100);
 				this.handles[handle] = {
 					mode: "READ",
 					path: pathname,
 					finished: false,
 					tmpPath: tmpPath,
 					tmpFile: fd,
-          stream: transformStream
+          stream: proxy
 				};
 				// var writestream = fs.createWriteStream(tmpPath);
 				// writestream.on("finish", function() {
 				// 	this.handles[handle].finished = true;
 				// }.bind(this));
-        transformStream.on("finish", function() {
+        proxy.on("finish", function() {
           this.handles[handle].finished = true;
         }.bind(this));
-				this.emit("readfile", pathname, transformStream);
+				this.emit("readfile", pathname, proxy);
 				return this.sftpStream.handle(reqid, handle);
 			}.bind(this));
 		}
