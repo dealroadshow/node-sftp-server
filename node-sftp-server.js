@@ -438,9 +438,9 @@ var SFTPSession = (function(superClass) {
 				var writestream = fs.createWriteStream(tmpPath, { fd });
 				writestream.on("finish", function() {
 					this.handles[handle].finished = true;
+          return this.sftpStream.handle(reqid, handle);
 				}.bind(this));
 				this.emit("readfile", pathname, writestream);
-				return this.sftpStream.handle(reqid, handle);
 			}.bind(this));
 		}
 		if (stringflags === 'w' || stringflags === 'wx') {
