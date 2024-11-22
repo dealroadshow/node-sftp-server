@@ -208,6 +208,9 @@ var SFTPServer = (function(superClass) {
 						return session.on('sftp', function(accept, reject) {
 							var sftpStream;
 							sftpStream = accept();
+              sftpStream.on('error', function(err) {
+                console.log('ERROR', err);
+              });
 							session = new SFTPSession(sftpStream);
 							return client.auth_wrapper?._session_start_callback?.(session);
 						});
