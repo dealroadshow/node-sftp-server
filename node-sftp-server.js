@@ -140,7 +140,7 @@ var DirectoryEmitter = (function(superClass) {
       attrs: attrs
     });
     if (!this.stopped && !this.done) {
-      return this.emit('dir');
+      return this.emit('dir', req);
     }
   };
 
