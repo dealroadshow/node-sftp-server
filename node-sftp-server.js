@@ -134,13 +134,13 @@ var DirectoryEmitter = (function(superClass) {
     if (typeof attrs === 'undefined') {
       attrs = {};
     }
-    this.stopped = this.sftpStream.name(req, {
+    this.stopped = this.sftpStream.name(req || this.req, {
       filename: name.toString(),
       longname: getLongname(name.toString(), attrs),
       attrs: attrs
     });
     if (!this.stopped && !this.done) {
-      return this.emit('dir', req);
+      return this.emit('dir');
     }
   };
 
