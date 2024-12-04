@@ -124,24 +124,24 @@ var DirectoryEmitter = (function(superClass) {
   DirectoryEmitter.prototype.request_directory = function(req) {
     this.req = req;
     if (!this.done) {
-      return this.emit('dir', req);
+      return this.emit('dir');
     } else {
       return this.end();
     }
   };
 
-  DirectoryEmitter.prototype.file = function(name, attrs, req) {
+  DirectoryEmitter.prototype.file = function(name, attrs) {
     if (typeof attrs === 'undefined') {
       attrs = {};
     }
-    this.stopped = this.sftpStream.name(req || this.req, {
+    this.stopped = this.sftpStream.name(this.req, {
       filename: name.toString(),
       longname: getLongname(name.toString(), attrs),
       attrs: attrs
     });
-    if (!this.stopped && !this.done) {
-      return this.emit('dir');
-    }
+    // if (!this.stopped && !this.done) {
+    //   return this.emit('dir');
+    // }
   };
 
   return DirectoryEmitter;
