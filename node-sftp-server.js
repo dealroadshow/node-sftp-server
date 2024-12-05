@@ -443,6 +443,7 @@ var SFTPSession = (function(superClass) {
 	};
 
 	SFTPSession.prototype.READ = function(reqid, handle, offset, length) {
+    console.log(offset, length);
 		var localHandle = this.handles[handle];
 
 		// Once our readstream is at eof, we're done reading into the
