@@ -414,7 +414,7 @@ var SFTPSession = (function(superClass) {
 					tmpPath: tmpPath,
 					tmpFile: fd
 				};
-				var writestream = fs.createWriteStream(tmpPath);
+				var writestream = fs.createWriteStream(tmpPath, { highWaterMark: 256 * 1024 });
 				writestream.on("finish", function() {
 					this.handles[handle].finished = true;
 				}.bind(this));
