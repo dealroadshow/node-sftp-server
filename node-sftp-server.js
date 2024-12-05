@@ -19,8 +19,7 @@ var extend = function(child, parent) {
 	slice = [].slice;
 
 var ssh2 = require('ssh2');
-var ssh2_stream = require('ssh2-streams');
-var SFTP = ssh2_stream.SFTPStream;
+var { STATUS_CODE, flagsToString } = ssh2.utils.sftp;
 
 var tmp = require('tmp');
 tmp.setGracefulCleanup();
@@ -96,7 +95,7 @@ var Responder = (function(superClass) {
 			return function(symbol) {
 				return _this[methodname] = function() {
 					_this.done = true;
-					return _this.sftpStream.status(_this.req, ssh2.SFTP_STATUS_CODE[symbol]);
+					return _this.sftpStream.status(_this.req, STATUS_CODE[symbol]);
 				};
 			};
 		})(this);
@@ -139,9 +138,6 @@ var DirectoryEmitter = (function(superClass) {
 			longname: getLongname(name.toString(), attrs),
 			attrs: attrs
 		});
-		if (!this.stopped && !this.done) {
-			return this.emit("dir");
-		}
 	};
 
 	return DirectoryEmitter;
@@ -246,7 +242,7 @@ var Statter = (function() {
 	};
 
 	Statter.prototype.nofile = function() {
-		return this.sftpStream.status(this.reqid, ssh2.SFTP_STATUS_CODE.NO_SUCH_FILE);
+		return this.sftpStream.status(this.reqid, STATUS_CODE.NO_SUCH_FILE);
 	};
 
 	Statter.prototype._get_mode = function() {
@@ -392,14 +388,14 @@ var SFTPSession = (function(superClass) {
 	SFTPSession.prototype.READDIR = function(reqid, handle) {
 		var ref;
 		if (((ref = this.handles[handle]) != null ? ref.mode : void 0) !== "OPENDIR") {
-			return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.NO_SUCH_FILE);
+			return this.sftpStream.status(reqid, STATUS_CODE.NO_SUCH_FILE);
 		}
 		return this.handles[handle].responder.request_directory(reqid);
 	};
 
 	SFTPSession.prototype.OPEN = function(reqid, pathname, flags, attrs) {
-		var handle, rs, started, stringflags, ts;
-		stringflags = SFTP.flagsToString(flags);
+		var handle, rs, started, ts;
+		var stringflags = flagsToString(flags);
 
 		if (stringflags === 'r') {
 			// Create a temporary file to hold stream contents.
@@ -459,7 +455,7 @@ var SFTPSession = (function(superClass) {
 				}
 
 				if (offset >= stats.size) {
-					return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.EOF);
+					return this.sftpStream.status(reqid, STATUS_CODE.EOF);
 				} else {
 					var buffer = Buffer.alloc(length);
 					return fs.read(localHandle.tmpFile, buffer, 0, length, offset, function(err, bytesRead, buffer) {
@@ -493,32 +489,32 @@ var SFTPSession = (function(superClass) {
 		if (!written) {
 			// Wait for drain event to avoid stream buffer overflow
 			stream.once('drain', () => {
-				this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
+				this.sftpStream.status(reqid, STATUS_CODE.OK);
 			});
 		} else {
-			this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
+			this.sftpStream.status(reqid, STATUS_CODE.OK);
 		}
 
 		return true;
 	};
 
 	SFTPSession.prototype.CLOSE = function(reqid, handle) {
-		//return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
+		//return this.sftpStream.status(reqid, STATUS_CODE.OK);
 		if (this.handles[handle]) {
 			switch (this.handles[handle].mode) {
 				case "OPENDIR":
 					this.handles[handle].responder.emit("end");
 					delete this.handles[handle];
-					return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
+					return this.sftpStream.status(reqid, STATUS_CODE.OK);
 				case "READ":
 					delete this.handles[handle];
-					return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
+					return this.sftpStream.status(reqid, STATUS_CODE.OK);
 				case "WRITE":
 					this.handles[handle].stream.end();
 					delete this.handles[handle]; //can't delete it while it's still going, right?
-					return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.OK);
+					return this.sftpStream.status(reqid, STATUS_CODE.OK);
 				default:
-					return this.sftpStream.status(reqid, ssh2.SFTP_STATUS_CODE.FAILURE);
+					return this.sftpStream.status(reqid, STATUS_CODE.FAILURE);
 			}
 		}
 	};
