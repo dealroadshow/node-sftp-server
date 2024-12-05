@@ -414,7 +414,7 @@ var SFTPSession = (function(superClass) {
 					tmpPath: tmpPath,
 					tmpFile: fd
 				};
-				var writestream = fs.createWriteStream(tmpPath);
+				var writestream = fs.createWriteStream(tmpPath, { highWaterMark: 256 * 1024 });
 				writestream.on("finish", function() {
 					this.handles[handle].finished = true;
 				}.bind(this));
@@ -443,7 +443,6 @@ var SFTPSession = (function(superClass) {
 	};
 
 	SFTPSession.prototype.READ = function(reqid, handle, offset, length) {
-    console.log(offset, length);
 		var localHandle = this.handles[handle];
 
 		// Once our readstream is at eof, we're done reading into the
