@@ -458,7 +458,7 @@ var SFTPSession = (function(superClass) {
 				} else {
 					var buffer = Buffer.alloc(length);
 					return fs.read(localHandle.tmpFile, buffer, 0, length, offset, function(err, bytesRead, buffer) {
-						return this.sftpStream.data(reqid, buffer.slice(0, bytesRead));
+						return this.sftpStream.data(reqid, buffer.subarray(0, bytesRead));
 					}.bind(this));
 				}
 			}.bind(this));
@@ -470,7 +470,7 @@ var SFTPSession = (function(superClass) {
 			if (stats.size >= offset + length) {
 				var buffer = Buffer.alloc(length);
 				return fs.read(localHandle.tmpFile, buffer, 0, length, offset, function(err, bytesRead, buffer) {
-					return this.sftpStream.data(reqid, buffer.slice(0, bytesRead));
+					return this.sftpStream.data(reqid, buffer.subarray(0, bytesRead));
 				}.bind(this));
 			} else {
 				// Wait for more data to become available.
