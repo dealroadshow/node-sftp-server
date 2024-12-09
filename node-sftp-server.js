@@ -177,6 +177,7 @@ var SFTPServer = (function(superClass) {
 	function SFTPServer(options) {
 		if (options.debug) {
 			debug = function(msg) { console.log(msg); };
+			options.debug = debug;
 		}
 		options.hostKeys = options.hostKeys.map(key => fs.readFileSync(key))
 		SFTPServer.options = options;
@@ -204,6 +205,11 @@ var SFTPServer = (function(superClass) {
 							var sftpStream;
 							sftpStream = accept();
 							session = new SFTPSession(sftpStream);
+
+							sftpStream.once('end', () => {
+								sftpStream.end();
+							});
+
 							return client.auth_wrapper?._session_start_callback?.(session);
 						});
 					});
