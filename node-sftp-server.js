@@ -177,6 +177,7 @@ var SFTPServer = (function(superClass) {
 	function SFTPServer(options) {
 		if (options.debug) {
 			debug = function(msg) { console.log(msg); };
+			options.debug = debug;
 		}
 		options.hostKeys = options.hostKeys.map(key => fs.readFileSync(key))
 		SFTPServer.options = options;
@@ -203,7 +204,17 @@ var SFTPServer = (function(superClass) {
 						return session.on('sftp', function(accept, reject) {
 							var sftpStream;
 							sftpStream = accept();
+
+							// This is necessary to properly terminate the connection for some
+    						// clients (ex: Rclone, sftp) that send EOF when requesting to close the
+    						// connection.
+							// https://github.com/mscdex/ssh2/pull/1111
+							session.on('eof', function() {
+								sftpStream.end();
+							});
+
 							session = new SFTPSession(sftpStream);
+
 							return client.auth_wrapper?._session_start_callback?.(session);
 						});
 					});
