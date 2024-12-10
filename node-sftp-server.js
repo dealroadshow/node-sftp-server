@@ -204,11 +204,12 @@ var SFTPServer = (function(superClass) {
 						return session.on('sftp', function(accept, reject) {
 							var sftpStream;
 							sftpStream = accept();
-							session = new SFTPSession(sftpStream);
 
-							sftpStream.once('end', () => {
+							session.on('eof', function() {
 								sftpStream.end();
 							});
+
+							session = new SFTPSession(sftpStream);
 
 							return client.auth_wrapper?._session_start_callback?.(session);
 						});
