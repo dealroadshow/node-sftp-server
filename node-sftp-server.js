@@ -205,6 +205,10 @@ var SFTPServer = (function(superClass) {
 							var sftpStream;
 							sftpStream = accept();
 
+							// This is necessary to properly terminate the connection for some
+    						// clients (ex: Rclone, sftp) that send EOF when requesting to close the
+    						// connection.
+							// https://github.com/mscdex/ssh2/pull/1111
 							session.on('eof', function() {
 								sftpStream.end();
 							});
