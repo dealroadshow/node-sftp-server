@@ -526,7 +526,6 @@ var SFTPSession = (function(superClass) {
 					delete this.handles[handle]; //can't delete it while it's still going, right?
 					return this.sftpStream.status(reqid, STATUS_CODE.OK);
 				default:
-					this.handles[handle].removeCallback?.();
 					return this.sftpStream.status(reqid, STATUS_CODE.FAILURE);
 			}
 		}
