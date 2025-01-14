@@ -413,7 +413,7 @@ var SFTPSession = (function(superClass) {
 			if (SFTPServer.options.temporaryFileDirectory) {
 				options.dir = SFTPServer.options.temporaryFileDirectory;
 			}
-			return tmp.file(options, function(err, tmpPath, fd) {
+			return tmp.file(options, function(err, tmpPath, fd, removeCallback) {
 				if (err) {
 					throw err;
 				}
@@ -423,7 +423,8 @@ var SFTPSession = (function(superClass) {
 					path: pathname,
 					finished: false,
 					tmpPath: tmpPath,
-					tmpFile: fd
+					tmpFile: fd,
+          removeCallback,
 				};
 				var writestream = fs.createWriteStream(tmpPath, { highWaterMark: 256 * 1024 });
 				writestream.on("finish", function() {
@@ -465,6 +466,8 @@ var SFTPSession = (function(superClass) {
 				}
 
 				if (offset >= stats.size) {
+          console.log('Remove TMP file');
+          localHandle.removeCallback?.();
 					return this.sftpStream.status(reqid, STATUS_CODE.EOF);
 				} else {
 					var buffer = Buffer.alloc(length);
