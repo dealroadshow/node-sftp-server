@@ -424,7 +424,7 @@ var SFTPSession = (function(superClass) {
 					finished: false,
 					tmpPath: tmpPath,
 					tmpFile: fd,
-          removeCallback,
+					removeCallback,
 				};
 				var writestream = fs.createWriteStream(tmpPath, { highWaterMark: 256 * 1024 });
 				writestream.on("finish", function() {
@@ -518,7 +518,7 @@ var SFTPSession = (function(superClass) {
 					delete this.handles[handle];
 					return this.sftpStream.status(reqid, STATUS_CODE.OK);
 				case "READ":
-          this.handles[handle].removeCallback?.();
+					this.handles[handle].removeCallback?.();
 					delete this.handles[handle];
 					return this.sftpStream.status(reqid, STATUS_CODE.OK);
 				case "WRITE":
