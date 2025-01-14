@@ -466,8 +466,6 @@ var SFTPSession = (function(superClass) {
 				}
 
 				if (offset >= stats.size) {
-          console.log('Remove TMP file');
-          localHandle.removeCallback?.();
 					return this.sftpStream.status(reqid, STATUS_CODE.EOF);
 				} else {
 					var buffer = Buffer.alloc(length);
@@ -520,6 +518,8 @@ var SFTPSession = (function(superClass) {
 					delete this.handles[handle];
 					return this.sftpStream.status(reqid, STATUS_CODE.OK);
 				case "READ":
+          console.log('Remove TMP file');
+          this.handles[handle].removeCallback?.();
 					delete this.handles[handle];
 					return this.sftpStream.status(reqid, STATUS_CODE.OK);
 				case "WRITE":
