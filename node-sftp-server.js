@@ -518,7 +518,6 @@ var SFTPSession = (function(superClass) {
 					delete this.handles[handle];
 					return this.sftpStream.status(reqid, STATUS_CODE.OK);
 				case "READ":
-          console.log('Remove TMP file');
           this.handles[handle].removeCallback?.();
 					delete this.handles[handle];
 					return this.sftpStream.status(reqid, STATUS_CODE.OK);
